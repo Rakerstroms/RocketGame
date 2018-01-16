@@ -69,9 +69,10 @@ public class Rocket : MonoBehaviour {
     }
 
     void RespawnWhenDead() {
-       
+
+        currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         crashParticles.Stop();
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(currentSceneIndex);
         state = State.Alive;
     }
 
