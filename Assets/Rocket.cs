@@ -51,6 +51,9 @@ public class Rocket : MonoBehaviour {
         }else if (Input.GetKeyDown(KeyCode.C)){
             collisionsEnabled = !collisionsEnabled;
         }
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Application.Quit();
+        }
     }
 
     void LoadNextLevel() {
