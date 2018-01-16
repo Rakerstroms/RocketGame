@@ -1,12 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour {
     Rigidbody rigidBody;
     AudioSource audioSource;
+    
 
     enum State { Alive, Dying, Transcending };
     State state;
+    bool collisionsEnabled = true;
+    int currentSceneIndex;
 
     [SerializeField] float rcsRotation = 180f;
     [SerializeField] float rcsThrust = 20f;
@@ -26,6 +30,8 @@ public class Rocket : MonoBehaviour {
         rigidBody = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
         state = State.Alive;
+        
+        
     }
 
 
@@ -35,26 +41,40 @@ public class Rocket : MonoBehaviour {
             RespndToThrustInput();
             RespondToRotateInput();
         }
+        RespondToDebugKeys();
 
+    }
+
+    private void RespondToDebugKeys() {
+        if (Input.GetKeyDown(KeyCode.L)) {
+            LoadNextLevel();
+        }else if (Input.GetKeyDown(KeyCode.C)){
+            collisionsEnabled = !collisionsEnabled;
+        }
     }
 
     void LoadNextLevel() {
 
-       finishParticles.Stop();
-        SceneManager.LoadScene(1);
+        currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int nextIndex = currentSceneIndex +1;
+        if(nextIndex == SceneManager.sceneCountInBuildSettings) {
+            nextIndex = 0;
+        }
+        finishParticles.Stop();
+        SceneManager.LoadScene(nextIndex);
         state = State.Alive;
     }
 
     void RespawnWhenDead() {
-
-       crashParticles.Stop();
+       
+        crashParticles.Stop();
         SceneManager.LoadScene(0);
         state = State.Alive;
     }
 
 
     private void OnCollisionEnter(Collision collision) {
-        if (state != State.Alive) { return; }
+        if (state != State.Alive  ) { return; }
 
         switch (collision.gameObject.tag) {
             case "Friendly":
@@ -78,12 +98,14 @@ public class Rocket : MonoBehaviour {
     }
 
     private void StartDeathSequence() {
-        state = State.Dying;
-        audioSource.Stop();
-        mainEngineParticles.Stop();
-        audioSource.PlayOneShot(crashSound);
-        crashParticles.Play();
-        Invoke("RespawnWhenDead", levelLoadDelay);
+        if (collisionsEnabled) {
+            state = State.Dying;
+            audioSource.Stop();
+            mainEngineParticles.Stop();
+            audioSource.PlayOneShot(crashSound);
+            crashParticles.Play();
+            Invoke("RespawnWhenDead", levelLoadDelay);
+        }
     }
 
 
