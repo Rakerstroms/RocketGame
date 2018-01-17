@@ -11,6 +11,8 @@ public class Rocket : MonoBehaviour {
     State state;
     bool collisionsEnabled = true;
     int currentSceneIndex;
+    bool isWinner = false;
+  
 
     [SerializeField] float rcsRotation = 180f;
     [SerializeField] float rcsThrust = 20f;
@@ -23,6 +25,9 @@ public class Rocket : MonoBehaviour {
     [SerializeField] ParticleSystem mainEngineParticles;
     [SerializeField] ParticleSystem crashParticles;
     [SerializeField] ParticleSystem finishParticles;
+
+    [SerializeField] ParticleSystem winnerParticle;
+
 
 
 
@@ -54,6 +59,12 @@ public class Rocket : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             Application.Quit();
         }
+        if (Input.GetKeyDown(KeyCode.Return) && isWinner) {
+            isWinner = false;
+            Oscillator.isMoving = true;
+            SceneManager.LoadScene(0);
+        }
+
     }
 
     void LoadNextLevel() {
@@ -61,14 +72,21 @@ public class Rocket : MonoBehaviour {
         currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextIndex = currentSceneIndex +1;
         if(nextIndex == SceneManager.sceneCountInBuildSettings) {
-            nextIndex = 0;
+            GameCompleted();
         }
         finishParticles.Stop();
         SceneManager.LoadScene(nextIndex);
         state = State.Alive;
     }
 
-    void RespawnWhenDead() {
+    private void GameCompleted() {
+        isWinner = true;
+        winnerParticle.Play();
+        Oscillator.isMoving = false;
+
+    }
+
+void RespawnWhenDead() {
 
         currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         crashParticles.Stop();
